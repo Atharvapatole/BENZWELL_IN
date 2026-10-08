@@ -272,11 +272,63 @@ export async function adminLoginAction(prevState: any, formData: FormData) {
 
     const supabase = await createClient();
 
+    const isDesignatedAdmin =
+      normalizedEmail === 'info@benzwell.in' ||
+      normalizedEmail === 'ceo.office.atharva@gmail.com';
+
     // 1. Supabase Authentication
-    const { data, error } = await supabase.auth.signInWithPassword({
+    let authResult = await supabase.auth.signInWithPassword({
       email: normalizedEmail,
       password,
     });
+
+    // Self-healing bootstrap: if designated admin logs in and auth fails with "Invalid login credentials"
+    // check if the admin user does NOT exist in auth.users yet in this new Supabase project
+    if (authResult.error && isDesignatedAdmin) {
+      const msg = authResult.error.message?.toLowerCase() || '';
+      if (msg.includes('invalid login credentials') || msg.includes('user not found') || msg.includes('invalid credentials')) {
+        try {
+          const adminClient = createAdminClient();
+          const { data: usersData } = await adminClient.auth.admin.listUsers();
+          const existingUser = (usersData?.users || []).find(
+            (u) => u.email?.toLowerCase() === normalizedEmail
+          );
+
+          if (!existingUser) {
+            // Admin user does not exist in auth.users yet in this fresh Supabase instance.
+            // Create the admin user with the supplied password and email confirmed.
+            console.log(`[Admin Bootstrap] Initializing admin user in auth.users for ${normalizedEmail}...`);
+            const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
+              email: normalizedEmail,
+              password,
+              email_confirm: true,
+              user_metadata: { full_name: 'BenzWell Administrator', role: 'admin' },
+            });
+
+            if (!createErr && created.user) {
+              // Retry sign in with the newly created account
+              authResult = await supabase.auth.signInWithPassword({
+                email: normalizedEmail,
+                password,
+              });
+            }
+          } else if (existingUser.email_confirmed_at === null) {
+            // Email is unconfirmed, confirm it
+            await adminClient.auth.admin.updateUserById(existingUser.id, {
+              email_confirm: true,
+            });
+            authResult = await supabase.auth.signInWithPassword({
+              email: normalizedEmail,
+              password,
+            });
+          }
+        } catch (bootstrapErr) {
+          console.warn('[Admin Bootstrap Error]', bootstrapErr);
+        }
+      }
+    }
+
+    const { data, error } = authResult;
 
     if (error || !data.user) {
       const msg = error?.message?.toLowerCase() || '';
@@ -305,10 +357,6 @@ export async function adminLoginAction(prevState: any, formData: FormData) {
         error: error?.message || 'Incorrect email or password.',
       };
     }
-
-    const isDesignatedAdmin =
-      normalizedEmail === 'info@benzwell.in' ||
-      normalizedEmail === 'ceo.office.atharva@gmail.com';
 
     // 2. Strict Server-Side Role Verification & Self-Healing Provisioning
     const adminClient = createAdminClient();

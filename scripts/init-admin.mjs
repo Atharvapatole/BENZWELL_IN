@@ -26,8 +26,14 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 async function setupAdmin() {
-  const adminEmail = 'info@benzwell.in';
-  const adminPassword = 'Benzwell@26';
+  const adminEmail = (process.argv[3] || process.env.ADMIN_EMAIL || 'info@benzwell.in').trim();
+  const adminPassword = process.argv[2] || process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_PASSWORD;
+
+  if (!adminPassword) {
+    console.error('Usage: node scripts/init-admin.mjs <password> [email]');
+    console.error('Or set ADMIN_INITIAL_PASSWORD in environment.');
+    process.exit(1);
+  }
 
   console.log(`Setting up BenzWell Admin: ${adminEmail}...`);
 
