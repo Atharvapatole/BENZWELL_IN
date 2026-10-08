@@ -1,0 +1,35 @@
+﻿# BenzWell — Digital Products Store
+> Official public guide and LLM discoverability context for BenzWell.
+
+## Overview
+BenzWell is a modern digital products and resources marketplace providing premium developer blueprints, AI prompt packs, masterclasses, and digital tools designed to accelerate creators and engineers.
+
+- **Official Website:** https://benzwell.in
+- **Official Contact Email:** info@benzwell.in
+- **Admin Alert Email:** ceo.office.atharva@gmail.com
+- **Currency:** INR (₹)
+- **Payment Gateway:** Razorpay (Secured 256-bit encryption, UPI, Cards, NetBanking)
+- **Fulfillment:** Instant digital delivery with 5-minute temporary access tokens and lifetime dashboard access under customer accounts.
+
+## Core Features & Offerings
+1. **Developer Workflows & Blueprints:** Production-ready architectures, templates, and full-stack modules.
+2. **AI & Prompt Engineering:** Curated prompt libraries, AI agent recipes, and system prompts.
+3. **Masterclasses & Ebooks:** High-value digital guides for professionals.
+4. **Secure Digital Entitlements:** Cryptographically authorized file downloads directly from private cloud storage.
+5. **Verified Customer Reviews:** Authentic review system where only customers who own the product can review.
+6. **Support AI & Help Center:** Instant multi-model AI assistant with human support escalation.
+
+## Store Policies
+- **Account Requirement:** Mandatory account creation or login before purchase to safeguard digital product entitlements.
+- **Refund Policy:** Digital goods delivered instantly are generally non-refundable, except in cases of verified defective files or duplicate charges.
+- **Privacy & Security:** Full customer data isolation with row-level security (RLS) and encrypted payment verifications.
+
+## Important Endpoints
+- Homepage: https://benzwell.in/
+- Catalog / Shop: https://benzwell.in/shop
+- Customer Portal: https://benzwell.in/account
+- Help & Support: https://benzwell.in/contact
+- Privacy Policy: https://benzwell.in/privacy
+- Terms & Conditions: https://benzwell.in/terms
+- Refund Policy: https://benzwell.in/refund-policy
+- Digital Delivery Policy: https://benzwell.in/digital-delivery

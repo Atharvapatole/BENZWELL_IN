@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fafafa;
+  --foreground: #09090b;
+  --surface-base: #fafafa;
+  --surface-elevated: #ffffff;
+  --surface-card: #ffffff;
+  --surface-input: #f4f4f5;
+  --surface-border: #e4e4e7;
+  --text-primary: #09090b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+  --brand-accent: #0ea5e9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #090a0f;
+    --foreground: #f8fafc;
+    --surface-base: #090a0f;
+    --surface-elevated: #11131a;
+    --surface-card: #161822;
+    --surface-input: #0e1017;
+    --surface-border: #272a38;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --brand-accent: #38bdf8;
+  }
+}
+
+.dark {
+  --background: #090a0f;
+  --foreground: #f8fafc;
+  --surface-base: #090a0f;
+  --surface-elevated: #11131a;
+  --surface-card: #161822;
+  --surface-input: #0e1017;
+  --surface-border: #272a38;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --brand-accent: #38bdf8;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Apple-style smooth scroll & glass scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(161, 161, 170, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(161, 161, 170, 0.7);
+}
+
+/* Subtle ambient backdrop background */
+.bg-ambient-glow {
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(14, 165, 233, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
+}
+
