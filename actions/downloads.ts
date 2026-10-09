@@ -26,14 +26,22 @@ async function resolveAndSignProductDownload(
   let filename = `${productData?.slug || 'benzwell-download'}.pdf`;
 
   // 0. Check external URL delivery first
+  const externalUrl =
+    productData?.external_download_url ||
+    (typeof productData?.file_info === 'object' ? productData?.file_info?.external_download_url : null);
+  const deliveryType =
+    productData?.delivery_type ||
+    (typeof productData?.file_info === 'object' ? productData?.file_info?.delivery_type : null) ||
+    (externalUrl ? 'external_url' : 'upload');
+
   if (
-    (productData?.delivery_type === 'external_url' && productData?.external_download_url) ||
-    (productData?.external_download_url && (productData.external_download_url.startsWith('http://') || productData.external_download_url.startsWith('https://')))
+    (deliveryType === 'external_url' && externalUrl) ||
+    (externalUrl && (externalUrl.startsWith('http://') || externalUrl.startsWith('https://')))
   ) {
     return {
       success: true,
-      signedUrl: productData.external_download_url,
-      filename: `${productData.slug || 'product'}-download`,
+      signedUrl: externalUrl,
+      filename: `${productData?.slug || 'product'}-download`,
     };
   }
 

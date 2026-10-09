@@ -44,6 +44,23 @@ async function logAdminAction(
 // PRODUCT MANAGEMENT
 // -----------------------------------------------------------------------------
 
+function adaptProductPayload(payload: any) {
+  const { delivery_type, external_download_url, ...rest } = payload;
+  const existingFileInfo =
+    typeof rest.file_info === 'object' && rest.file_info !== null ? rest.file_info : {};
+  return {
+    ...rest,
+    file_info: {
+      ...existingFileInfo,
+      delivery_type: delivery_type || existingFileInfo.delivery_type || 'upload',
+      external_download_url:
+        external_download_url !== undefined
+          ? external_download_url
+          : existingFileInfo.external_download_url || null,
+    },
+  };
+}
+
 export async function createProductAction(data: any) {
   const { user, profile, adminClient } = await requireAdmin();
 
@@ -52,17 +69,49 @@ export async function createProductAction(data: any) {
     return { success: false, error: parsed.error.errors[0]?.message };
   }
 
-  const { data: newProd, error } = await adminClient
+  const basePayload = {
+    ...parsed.data,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  // 1. Try insert with direct columns
+  let newProd: any = null;
+  let error: any = null;
+
+  const directResult = await adminClient
     .from('products')
-    .insert({
-      ...parsed.data,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
+    .insert(basePayload)
     .select()
     .single();
 
+  newProd = directResult.data;
+  error = directResult.error;
+
+  // 2. Fallback if schema cache is pending or columns are missing
+  if (
+    error &&
+    (error.message?.includes('delivery_type') ||
+      error.message?.includes('external_download_url') ||
+      error.message?.includes('schema cache'))
+  ) {
+    console.warn(
+      '[createProductAction] PostgREST schema cache missing delivery_type/external_download_url. Retrying with file_info wrapper:',
+      error.message
+    );
+    const adaptedPayload = adaptProductPayload(basePayload);
+    const fallbackResult = await adminClient
+      .from('products')
+      .insert(adaptedPayload)
+      .select()
+      .single();
+
+    newProd = fallbackResult.data;
+    error = fallbackResult.error;
+  }
+
   if (error || !newProd) {
+    console.error('[createProductAction Error]', error);
     return { success: false, error: error?.message || 'Failed to create product' };
   }
 
@@ -86,17 +135,49 @@ export async function updateProductAction(id: string, data: any) {
     return { success: false, error: parsed.error.errors[0]?.message };
   }
 
-  const { data: updatedProd, error } = await adminClient
+  const basePayload = {
+    ...parsed.data,
+    updated_at: new Date().toISOString(),
+  };
+
+  let updatedProd: any = null;
+  let error: any = null;
+
+  const directResult = await adminClient
     .from('products')
-    .update({
-      ...parsed.data,
-      updated_at: new Date().toISOString(),
-    })
+    .update(basePayload)
     .eq('id', id)
     .select()
     .single();
 
+  updatedProd = directResult.data;
+  error = directResult.error;
+
+  // Fallback if schema cache missing delivery_type or external_download_url
+  if (
+    error &&
+    (error.message?.includes('delivery_type') ||
+      error.message?.includes('external_download_url') ||
+      error.message?.includes('schema cache'))
+  ) {
+    console.warn(
+      '[updateProductAction] PostgREST schema cache missing delivery_type/external_download_url. Retrying with file_info wrapper:',
+      error.message
+    );
+    const adaptedPayload = adaptProductPayload(basePayload);
+    const fallbackResult = await adminClient
+      .from('products')
+      .update(adaptedPayload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    updatedProd = fallbackResult.data;
+    error = fallbackResult.error;
+  }
+
   if (error || !updatedProd) {
+    console.error('[updateProductAction Error]', error);
     return { success: false, error: error?.message || 'Failed to update product' };
   }
 
@@ -140,11 +221,34 @@ export async function duplicateProductAction(id: string) {
   cloneData.slug = `${cloneData.slug}-copy-${Math.floor(Math.random() * 1000)}`;
   cloneData.status = 'draft';
 
-  const { data: newProd, error: insertErr } = await adminClient
+  let newProd: any = null;
+  let insertErr: any = null;
+
+  const directResult = await adminClient
     .from('products')
     .insert(cloneData)
     .select()
     .single();
+
+  newProd = directResult.data;
+  insertErr = directResult.error;
+
+  if (
+    insertErr &&
+    (insertErr.message?.includes('delivery_type') ||
+      insertErr.message?.includes('external_download_url') ||
+      insertErr.message?.includes('schema cache'))
+  ) {
+    const adapted = adaptProductPayload(cloneData);
+    const fallbackResult = await adminClient
+      .from('products')
+      .insert(adapted)
+      .select()
+      .single();
+
+    newProd = fallbackResult.data;
+    insertErr = fallbackResult.error;
+  }
 
   if (insertErr || !newProd) return { success: false, error: insertErr?.message };
 

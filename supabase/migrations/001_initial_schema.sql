@@ -70,6 +70,8 @@ CREATE TABLE IF NOT EXISTS public.products (
     file_info JSONB DEFAULT '{}'::jsonb,
     download_limit INT NOT NULL DEFAULT 10,
     download_expiry_days INT NOT NULL DEFAULT 365,
+    delivery_type TEXT NOT NULL DEFAULT 'upload' CHECK (delivery_type IN ('upload', 'external_url')),
+    external_download_url TEXT,
     rating NUMERIC(3, 2) NOT NULL DEFAULT 5.00,
     review_count INT NOT NULL DEFAULT 0,
     sales_count INT NOT NULL DEFAULT 0,
@@ -83,6 +85,7 @@ CREATE INDEX IF NOT EXISTS idx_products_slug ON public.products(slug);
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_status ON public.products(status);
 CREATE INDEX IF NOT EXISTS idx_products_featured ON public.products(featured);
+CREATE INDEX IF NOT EXISTS idx_products_delivery_type ON public.products(delivery_type);
 
 -- 5. PRODUCT FILES (Stored in private Supabase Storage bucket 'products-private')
 CREATE TABLE IF NOT EXISTS public.product_files (

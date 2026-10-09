@@ -49,12 +49,21 @@ export async function GET(
   let targetPath = '';
   let filename = `${entitlement.products?.slug || 'benzwell-download'}.pdf`;
 
+  const prod = entitlement.products;
+  const externalUrl =
+    prod?.external_download_url ||
+    (typeof prod?.file_info === 'object' ? prod?.file_info?.external_download_url : null);
+  const deliveryType =
+    prod?.delivery_type ||
+    (typeof prod?.file_info === 'object' ? prod?.file_info?.delivery_type : null) ||
+    (externalUrl ? 'external_url' : 'upload');
+
   if (
-    (entitlement.products?.delivery_type === 'external_url' && entitlement.products?.external_download_url) ||
-    (entitlement.products?.external_download_url && (entitlement.products.external_download_url.startsWith('http://') || entitlement.products.external_download_url.startsWith('https://')))
+    (deliveryType === 'external_url' && externalUrl) ||
+    (externalUrl && (externalUrl.startsWith('http://') || externalUrl.startsWith('https://')))
   ) {
-    targetPath = entitlement.products.external_download_url;
-    filename = `${entitlement.products?.slug || 'product'}-download`;
+    targetPath = externalUrl;
+    filename = `${prod?.slug || 'product'}-download`;
   } else {
     let fileQuery = adminClient.from('product_files').select('*').eq('product_id', entitlement.product_id);
     if (fileId) {

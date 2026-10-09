@@ -61,10 +61,12 @@ export function ProductForm({ product, categories, initialFiles = [] }: ProductF
   const [downloadLimit, setDownloadLimit] = useState(product?.download_limit?.toString() || '10');
   const [downloadExpiryDays, setDownloadExpiryDays] = useState(product?.download_expiry_days?.toString() || '365');
   const [deliveryType, setDeliveryType] = useState<'upload' | 'external_url'>(
-    product?.delivery_type || (product?.external_download_url ? 'external_url' : 'upload')
+    product?.delivery_type ||
+      (product as any)?.file_info?.delivery_type ||
+      (product?.external_download_url || (product as any)?.file_info?.external_download_url ? 'external_url' : 'upload')
   );
   const [externalDownloadUrl, setExternalDownloadUrl] = useState(
-    product?.external_download_url || ''
+    product?.external_download_url || (product as any)?.file_info?.external_download_url || ''
   );
   const [seoTitle, setSeoTitle] = useState(product?.seo_title || '');
   const [seoDescription, setSeoDescription] = useState(product?.seo_description || '');
